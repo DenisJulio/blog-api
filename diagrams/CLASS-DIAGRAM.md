@@ -7,7 +7,7 @@ classDiagram
         title: string
         content: string
         publication_date: date
-        author_id: int
+        user_id: int
         upvotes: int
         tags: List~Tag~
         comments: List~Comment~
@@ -18,25 +18,32 @@ classDiagram
         name: string
     }
 
-    class Author {
-        author_id: int
+    class User {
+        user_id: int
         name: string
         email: string
+        role: UserRole  
+    }
+    
+    class UserRole {
+        <<enumeration>>
+        AUTHOR
+        READER
     }
 
     class Comment {
         comment_id: int
         post_id: int
-        author_id: int
+        user_id: int
         content: string
         created_at: timestamp
         parent_comment_id: int
         replies: List~Comment~
     }
 
-    BlogPost "1" o-- "0..*" Tag : has
-    Author "1" -- "0..*" BlogPost : writes
-    BlogPost "1" *-- "0..*" Comment : has
-    Comment "1" -- "1" Author : has
-    Comment "0..*" --* "1" Comment : is reply to
+    BlogPost "1" o-- "0..*" Tag: has
+    User "1" -- "0..*" BlogPost: writes
+    BlogPost "1" *-- "0..*" Comment: has
+    Comment "0..*" -- "1" User: has
+    Comment "0..*" --* "1" Comment: is reply to
 ```
