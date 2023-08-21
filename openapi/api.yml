@@ -1,0 +1,136 @@
+openapi: "3.0.3"
+info:
+  description: |-
+    Api that exposes interaction with the blog.
+  title: Blog Api
+  version: "1"
+paths:
+  /posts:
+    get:
+      parameters:
+        - name: tags
+          in: query
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+          example: "rest"
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+          example: 10
+      responses:
+        200:
+          description: |-
+            Returns a HAL formatted list of blog posts
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/PostsHAL'
+  /posts/{postId}:
+    get:
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 12
+      responses:
+        200:
+          description: |-
+            Returns a HAL formatted blog post data
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/PostHAL'
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+    PostsHAL:
+      type: object
+      properties:
+        _embedded:
+          type: object
+          properties:
+            posts:
+              type: array
+              items:
+                $ref: '#/components/schemas/PartialPostHAL'
+        _links:
+          type: object
+          properties:
+            self:
+              type: object
+              properties:
+                href:
+                  type: string
+    Post:
+      type: object
+      description: Representation of a blog post
+      allOf:
+        - $ref: '#/components/schemas/PartialPost'
+      properties:
+        content:
+          type: string
+    PostHAL:
+      type: object
+      properties:
+        _links:
+          type: object
+          properties:
+            self:
+              $ref: '#/components/schemas/Link'
+        _embedded:
+          type: object
+          properties:
+            author-info:
+              $ref: '#/components/schemas/Link'
+            comments:
+              $ref: '#/components/schemas/Link'
+      allOf:
+        - $ref: '#/components/schemas/Post'
+    PartialPost:
+      type: object
+      description: Partial properties of a blog post for bandwidth saving
+      properties:
+        title:
+          type: string
+        publication-date:
+          type: string
+        author:
+          type: string
+        upvotes:
+          type: integer
+        tags:
+          type: array
+          items:
+            type: string
+    PartialPostHAL:
+      type: object
+      properties:
+        _links:
+          type: object
+          properties:
+            self:
+              type: object
+              properties:
+                href:
+                  type: string
+      allOf:
+        - $ref: '#/components/schemas/PartialPost'
+    Link:
+      type: object
+      properties:
+        href:
+          type: string
+          format: url
