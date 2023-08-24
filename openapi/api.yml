@@ -11,6 +11,8 @@ paths:
         - name: tags
           in: query
           required: false
+          description: |-
+            Queries blog posts matching the given 'tags'
           schema:
             type: array
             items:
@@ -19,9 +21,21 @@ paths:
         - name: limit
           in: query
           required: false
+          description: |-
+            Sets the maximum limit of posts for page.
           schema:
             type: integer
-          example: 10
+            default: 10
+          example: 5
+        - name: page
+          in: query
+          required: false
+          description: |-
+            Selects a page of blog posts
+          schema:
+            type: integer
+            default: 1
+          example: 3
       responses:
         200:
           description: |-
@@ -47,6 +61,58 @@ paths:
             application/hal+json:
               schema:
                 $ref: '#/components/schemas/PostHAL'
+  /comments:
+    get:
+      parameters:
+        - name: postId
+          in: query
+          description: |-
+            Query comments for the specified blog post.
+          required: false
+          schema:
+            type: integer
+          example: 10
+        - name: parentId
+          in: query
+          description: |-
+            Query comment replies for the specific comment.
+          required: false
+          schema:
+            type: integer
+          example: 25
+      responses:
+        200:
+          description: |-
+            Returns a list of HAL formatted comments.
+          content:
+            application/hal+json:
+              schema:
+                type: object
+                properties:
+                  _embedded:
+                    type: object
+                    properties:
+                      comments:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/CommentHAL'
+  /comments/{commentId}:
+    get:
+      parameters:
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 10
+      responses:
+        200:
+          description: |-
+            Returns a HAL formatted representation of a comment
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/CommentHAL'
 components:
   schemas:
     User:
@@ -70,10 +136,13 @@ components:
           type: object
           properties:
             self:
-              type: object
-              properties:
-                href:
-                  type: string
+              $ref: '#/components/schemas/Link'
+            next:
+              $ref: '#/components/schemas/Link'
+            previous:
+              $ref: '#/components/schemas/Link'
+            last:
+              $ref: '#/components/schemas/Link'
     Post:
       type: object
       description: Representation of a blog post
@@ -90,11 +159,11 @@ components:
           properties:
             self:
               $ref: '#/components/schemas/Link'
+            author-info:
+              $ref: '#/components/schemas/Link'
         _embedded:
           type: object
           properties:
-            author-info:
-              $ref: '#/components/schemas/Link'
             comments:
               $ref: '#/components/schemas/Link'
       allOf:
@@ -122,12 +191,59 @@ components:
           type: object
           properties:
             self:
-              type: object
-              properties:
-                href:
-                  type: string
+              $ref: '#/components/schemas/Link'
       allOf:
         - $ref: '#/components/schemas/PartialPost'
+    Comment:
+      type: object
+      properties:
+        content:
+          type: string
+        created_at:
+          type: string
+        author:
+          type: string
+        reply_count:
+          type: integer
+    CommentHAL:
+      type: object
+      properties:
+        _links:
+          type: object
+          properties:
+            self:
+              $ref: '#/components/schemas/Link'
+            parent:
+              $ref: '#/components/schemas/Link'
+              nullable: true
+            author-info:
+              $ref: '#/components/schemas/Link'
+            post:
+              $ref: '#/components/schemas/Link'
+        _embedded:
+          type: object
+          properties:
+            replies:
+              $ref: '#/components/schemas/Link'
+      allOf:
+        - $ref: '#/components/schemas/Comment'
+      example:
+        _links:
+          self:
+            href: /comments/24
+          parent:
+            href: /comments/17
+          author-info:
+            href: /users/324
+          post:
+            href: /posts/54
+        _embedded:
+          replies:
+            href: /comments?parentId=24
+        content: A comment
+        created_at: 2023-16-18T20:66:43Z
+        author: John Doe
+        reply_count: 4
     Link:
       type: object
       properties:
