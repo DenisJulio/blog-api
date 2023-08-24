@@ -35,9 +35,9 @@ classDiagram
         comment_id: int
         post_id: int
         user_id: int
+        parent_comment_id: int
         content: string
         created_at: timestamp
-        parent_comment_id: int
         replies: List~Comment~
     }
 
