@@ -22,7 +22,7 @@ paths:
           in: query
           required: false
           description: |-
-            Sets the maximum limit of posts for page.
+            Sets the maximum limit of posts per page.
           schema:
             type: integer
             default: 10
@@ -39,11 +39,43 @@ paths:
       responses:
         200:
           description: |-
-            Returns a HAL formatted list of blog posts
+            Returns a HAL formatted list of blog posts sorted by the latest published
           content:
             application/hal+json:
               schema:
                 $ref: '#/components/schemas/PostsHAL'
+    post:
+      description: |-
+        Publishes a new blog post for the authorized user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                content:
+                  type: string
+                tags:
+                  type: array
+                  items:
+                    type: string
+              required:
+                - title
+                - content
+                - tags
+      responses:
+        201:
+          description: |-
+            Returns a HAL formatted partial representation of the newly created blog post
+          content:
+            application/hal+json:
+              schema:
+                $ref: '#/components/schemas/PartialPostHAL'
+      security:
+        - basicAuth: []
   /posts/{postId}:
     get:
       parameters:
@@ -214,8 +246,7 @@ components:
             self:
               $ref: '#/components/schemas/Link'
             parent:
-              $ref: '#/components/schemas/Link'
-              nullable: true
+              $ref: '#/components/schemas/NullableLink'
             author-info:
               $ref: '#/components/schemas/Link'
             post:
@@ -250,3 +281,14 @@ components:
         href:
           type: string
           format: url
+    NullableLink:
+      type: object
+      properties:
+        href:
+          type: string
+          format: url
+      nullable: true
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
